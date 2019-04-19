@@ -1,6 +1,5 @@
 .idea/
 runs/
-data/CASIA-WebFace
-data/lfw_funneled
+data/
 __pycache__/
 *.tar
