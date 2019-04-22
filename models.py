@@ -6,11 +6,12 @@ import torch.utils.model_zoo as model_zoo
 from torch import nn
 from torch.nn import Parameter
 from torchsummary import summary
+from torchvision import models
 
 from config import device, num_classes
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-           'resnet152']
+           'resnet152', 'myResnet18']
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -220,6 +221,8 @@ class ResNet(nn.Module):
         return x
 
 
+
+
 def resnet18(args, **kwargs):
     model = ResNet(IRBlock, [2, 2, 2, 2], use_se=args.use_se, **kwargs)
     if args.pretrained:
@@ -356,6 +359,25 @@ class ArcMarginModel(nn.Module):
         output *= self.s
         return output
 
+class Flatten(nn.Module):
+    def forward(self, x):
+        return x.view(x.size()[0], -1)
+
+class myResnet18(nn.Module):
+    def __init__(self, num_features=256, imagenet=True):
+        super(myResnet18, self).__init__()
+        self.resnet18 = models.resnet18(pretrained=imagenet)
+        self.embedder = torch.nn.Sequential(*list(self.resnet18.children())[:-1])
+        self.fc1 = nn.Linear(512, num_features)
+        self.features = nn.Sequential(self.embedder, Flatten(), self.fc1)
+        self._freeze_weights()
+
+    def forward(self, x):
+        return self.features(x)
+
+    def _freeze_weights(self):
+        for param in self.resnet18.parameters():
+            param.requires_grad = False
 
 if __name__ == "__main__":
     # args = parse_args()
