@@ -105,7 +105,7 @@ def train_net(args):
                                             criterion=criterion,
                                             optimizer=optimizer,
                                             epoch=epoch,
-                                            logger=logger)
+                                            logger=logger, writer=writer)
 
         writer.add_scalar('Train_Loss', train_loss, epoch)
         writer.add_scalar('Train_Top5_Accuracy', train_top5_accs, epoch)
@@ -131,7 +131,7 @@ def train_net(args):
         save_checkpoint(epoch, epochs_since_improvement, model, metric_fc, optimizer, best_acc, is_best)
 
 
-def train(train_loader, model, metric_fc, criterion, optimizer, epoch, logger):
+def train(train_loader, model, metric_fc, criterion, optimizer, epoch, logger, writer):
     model.train()  # train mode (dropout and batchnorm is used)
     metric_fc.train()
 
@@ -173,6 +173,9 @@ def train(train_loader, model, metric_fc, criterion, optimizer, epoch, logger):
                         'Top5 Accuracy {top5_accs.val:.3f} ({top5_accs.avg:.3f})'.format(epoch, i, len(train_loader),
                                                                                          loss=losses,
                                                                                          top5_accs=top5_accs))
+
+        writer.add_scalar('Batch_Train_Loss', losses.val, epoch * len(train_loader) + i)
+        writer.add_scalar('Batch_Train_Top5_Accuracy', top5_accs.val, epoch * len(train_loader) + i)
 
     return losses.avg, top5_accs.avg
 
