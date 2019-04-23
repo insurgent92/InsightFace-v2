@@ -2,6 +2,9 @@ import os
 
 import torch
 
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # sets device for model and PyTorch tensors
 
 # Model parameters
